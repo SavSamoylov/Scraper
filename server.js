@@ -18,3 +18,7 @@ xps.go(app,
 
 // Routes
 // -----------------------------------------------------------------------------
+
+// Home
+let home = require(path.join(__dirname, "routes/home.js"))
+app.use("/", home)
