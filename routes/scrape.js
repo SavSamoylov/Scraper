@@ -13,45 +13,46 @@ mongoose.Promise = Promise;
 let router = express.Router()
 
 
-// User REGISTER GET Routes
+// SCRAPE Routes
 router.get('/', (req, res)=>{
 
-  request("https://techcrunch.com/", function(error, response, html) {
 
-    var $ = cheerio.load(html);
+  getScrape((data)=>{
+    res.json(data)
+  })
 
-    $(".block-content").each(function(i, element) {
 
-      // Save an empty result object
-      var result = {};
-
-      // Add the text and href of every link, and save them as properties of the result object
-      result.title = $(this).children('.post-title').text();
-      result.link = $(this).children('.post-title').children("a").attr("href");
-      result.summary = $(this).children('.excerpt').text();
-      // Using our Article model, create a new entry
-      // This effectively passes the result object to the entry (and the title and link)
-      // var entry = new Article(result);
-
-      // Now, save that entry to the db
-      // entry.save(function(err, doc) {
-      //   // Log any errors
-      //   if (err) {
-      //     console.log(err);
-      //   }
-      //   // Or log the doc
-      //   else {
-      //     console.log(doc);
-      //   }
-      // });
-
-    });
-  });
-  // Tell the browser that we finished scraping the text
-  res.send("Scrape Complete");
 });
 
 
-
-
 module.exports = router;
+
+// Helper Functions
+// =============================================================
+function getScrape(cb){
+
+  request("https://techcrunch.com/", function(error, response, html) {
+
+    let resultArr = [];
+
+    const $ = cheerio.load(html);
+
+    $(".block-content").each(function(i, element) {
+
+      let result = {};
+
+      result.title = $(this).children('.post-title').text();
+      result.link = $(this).children('.post-title').children("a").attr("href");
+      result.summary = $(this).children('.excerpt').text();
+
+      if(result.title || result.link || result.summary){
+        resultArr.push(result);
+      }
+
+    });
+
+    cb(resultArr)
+    
+  });
+
+}
